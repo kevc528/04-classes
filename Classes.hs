@@ -8,7 +8,7 @@ date: September 26, 2022
 module Classes where
 
 import Data.Char (Char)
-import qualified Data.List as List
+import Data.List qualified as List
 import Test.HUnit (Test (TestList), runTestTT, (~:), (~?=))
 import Text.Read (Read)
 import Prelude hiding (lookup)
@@ -164,9 +164,14 @@ by using 'deriving' like we saw in [`Datatypes`](Datatypes.html)!)
 
 -}
 
+-- Tree can be an instance of Eq defined given a is an instance of Eq
 instance Eq a => Eq (Tree a) where
   (==) :: Tree a -> Tree a -> Bool
-  t1 == t2 = undefined
+  t1 == t2 = case (t1, t2) of
+    (Empty, Empty) -> True
+    (_, Empty) -> False
+    (Empty, _) -> False
+    (Branch v1 l1 r1, Branch v2 l2 r2) -> v1 == v2 && l1 == l2 && r1 == r2
 
 {-
 This code tells Haskell how to compare `Tree a`s for equality as long
@@ -555,7 +560,7 @@ because of the superclass constraint, we *must* derive `Eq` at the same time
 as `Ord`.
 -}
 
-data MyThree = One | Two | Three deriving (Eq, Ord)
+data MyThree = One | Two | Three deriving (Eq, Ord, Show)
 
 {-
 >
@@ -716,18 +721,21 @@ Then we can see the first day
 -}
 
 -- >>> minBound :: Day
+-- Sunday
 
 {-
 and last day
 -}
 
 -- >>> maxBound :: Day
+-- Saturday
 
 {-
 as well as enumerate a list of all of them.
 -}
 
 -- >>> daysOfWeek
+-- [Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday]
 
 daysOfWeek :: [Day]
 daysOfWeek = [minBound ..]
@@ -817,7 +825,8 @@ See if you can define a Functor instance for this type:
 data Two a = MkTwo a a deriving (Eq, Show, Read, Ord)
 
 instance Functor Two where
-  fmap = undefined
+  fmap :: (a -> b) -> Two a -> Two b
+  fmap f (MkTwo fst snd) = MkTwo (f fst) (f snd)
 
 {-
 In the meantime, think about what laws instances of this class should
